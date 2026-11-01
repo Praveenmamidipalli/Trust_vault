@@ -1,26 +1,61 @@
 # TrustVault
 
-TrustVault is a security-first confidential document management platform. Its
-backend is being built incrementally with FastAPI, PostgreSQL, SQLAlchemy,
-JWT authentication, and explicit document-level authorization.
+TrustVault is a security-first confidential document management platform.
+The planned backend uses FastAPI, PostgreSQL, SQLAlchemy, JWT authentication,
+Argon2 password hashing, and explicit document-level authorization.
 
-## Current foundation
+## Implementation status
 
-The initial schema defines users, documents, document grants, and audit events
-in `app/models.py`. `app/database.py` contains the SQLAlchemy declarative base
-and a consistent database naming convention. The ORM models use UUID primary
-keys, foreign keys, checks, and indexes; active grants are unique per
-document/user pair while revoked grants remain available as history.
+**Current: initial project and database-model foundation.** The SQLAlchemy
+models define users, documents, document grants, and audit events with UUID
+identifiers, foreign keys, checks, indexes, and uniqueness constraints for
+active grants. Model tests run against SQLite, and the schema has been
+compiled with SQLAlchemy's PostgreSQL dialect.
 
-The API and authentication are not implemented yet.
+Authentication, authorization services, API routes, and a live PostgreSQL
+connection have **not** been implemented or verified yet. The current tests
+cover model creation and selected database constraints only; they do not
+demonstrate the requested HTTP authorization rules.
 
-## Setup and verification
+## Requirements
+
+- Python 3.10 or newer
+- PostgreSQL is planned; no running PostgreSQL server is needed for the
+  current model tests
+
+## Installation (Windows PowerShell)
+
+From the repository root:
 
 ```powershell
-python -m venv .venv
+py -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe -m pytest
 ```
 
-PostgreSQL connection configuration and API startup instructions will be added
-with the database connection and application implementation.
+Do not put real passwords, JWT secrets, or database credentials in source
+files. Local `.env` files and private document/storage files are excluded by
+`.gitignore`; `.env.example` is a safe-to-commit placeholder.
+
+## Tests
+
+Run the current automated test suite from the repository root:
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest -q
+```
+
+The PostgreSQL DDL can be checked without connecting to a server:
+
+```powershell
+.\.venv\Scripts\python.exe -c "from sqlalchemy.dialects import postgresql; from sqlalchemy.schema import CreateTable; from app.models import User, Document, DocumentGrant, AuditEvent; [CreateTable(model.__table__).compile(dialect=postgresql.dialect()) for model in (User, Document, DocumentGrant, AuditEvent)]; print('PostgreSQL DDL compiled')"
+```
+
+## Project layout
+
+```text
+app/       Application package and SQLAlchemy models
+tests/     Automated tests
+docs/      Project documentation
+scripts/   Development scripts
+```
