@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import Enum
 from uuid import UUID, uuid4
 
 from sqlalchemy import (
@@ -6,6 +7,7 @@ from sqlalchemy import (
     Boolean,
     CheckConstraint,
     DateTime,
+    Enum as SqlEnum,
     ForeignKey,
     Index,
     String,
@@ -16,6 +18,12 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
+
+
+class UserRole(str, Enum):
+    ADMIN = "ADMIN"
+    OWNER = "OWNER"
+    VIEWER = "VIEWER"
 
 
 class User(Base):
@@ -32,7 +40,16 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
     email: Mapped[str] = mapped_column(String(320), nullable=False, unique=True)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
-    role: Mapped[str] = mapped_column(String(16), nullable=False)
+    role: Mapped[UserRole] = mapped_column(
+        SqlEnum(
+            UserRole,
+            name="user_role",
+            native_enum=False,
+            create_constraint=False,
+            values_callable=lambda roles: [role.value for role in roles],
+        ),
+        nullable=False,
+    )
     is_active: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=True, server_default=text("true")
     )

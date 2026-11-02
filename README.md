@@ -6,16 +6,19 @@ Argon2 password hashing, and explicit document-level authorization.
 
 ## Implementation status
 
-**Current: initial project and database-model foundation.** The SQLAlchemy
-models define users, documents, document grants, and audit events with UUID
-identifiers, foreign keys, checks, indexes, and uniqueness constraints for
-active grants. Model tests run against SQLite, and the schema has been
-compiled with SQLAlchemy's PostgreSQL dialect.
+**Current: initial database models and authentication primitives.** The
+SQLAlchemy models define users, documents, document grants, and audit events
+with UUID identifiers, foreign keys, checks, indexes, and uniqueness
+constraints for active grants. Authentication helpers use Argon2 password
+hashing, short-lived JWTs, and database-backed active-user checks. Model and
+authentication tests run against SQLite, and the schema has been compiled
+with SQLAlchemy's PostgreSQL dialect.
 
-Authentication, authorization services, API routes, and a live PostgreSQL
-connection have **not** been implemented or verified yet. The current tests
-cover model creation and selected database constraints only; they do not
-demonstrate the requested HTTP authorization rules.
+The authentication API routes, document authorization service, document
+endpoints, and a live PostgreSQL connection have **not** been implemented or
+verified yet. The current authentication tests use a small protected test
+route to exercise the real bearer-token dependency; they do not demonstrate
+the requested document HTTP authorization rules.
 
 ## Requirements
 
@@ -35,7 +38,13 @@ py -m venv .venv
 
 Do not put real passwords, JWT secrets, or database credentials in source
 files. Local `.env` files and private document/storage files are excluded by
-`.gitignore`; `.env.example` is a safe-to-commit placeholder.
+`.gitignore`; `.env.example` contains placeholders only. Set `DATABASE_URL`
+and a random `JWT_SECRET_KEY` of at least 32 bytes in the process environment.
+For example, generate a secret with:
+
+```powershell
+.\.venv\Scripts\python.exe -c "import secrets; print(secrets.token_urlsafe(48))"
+```
 
 ## Tests
 
